@@ -26,7 +26,12 @@ function App() {
         setPrevious(null);
     }
     const Delete = () => {
-
+        if(current === ""){
+            return;
+        }
+        const value = current.slice(0.-1)
+        setCurrent(value)
+        console.log('cccccccccccc')
     }
     const getPerious = () =>{
         switch (current){
