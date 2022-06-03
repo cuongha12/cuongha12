@@ -1,89 +1,80 @@
 import './App.css'
-import React, {useState} from 'react';
-// import Caculator from "./component/caculator";
+import React, {useCallback, useState} from 'react';
+import ActionCalculator from "./component/ActionCalculator";
+
+const arrAction = ['ac', 'del', '/', '7','8','9','*','4','5','6','+','1','2', '3', '-', '.', '0', '='];
 
 function App() {
-    const [number1,setNumber1]  = useState("");
-    const [number2,setNumber2]  = useState("");
-    const [current,setCurrent]  = useState("");
-    const [previous,setPrevious] = useState(0);
-    const clickNumber = (child) => {
-        if (current === ""){
-            setNumber1(number1+ child);
-        }else{
-            setNumber2(number2 + child)
-        }
 
-    }
-    const clickSign = (parent) =>{
-        setCurrent(parent)
+	const [result, setResult] = useState('') //Kết quả or số nhập
 
-    }
-    const  Clear = () =>{
-        setCurrent("");
-        setNumber2("");
-        setNumber1("");
-        setPrevious(null);
-    }
-    const Delete = () => {
-        if(current === ""){
-            return;
-        }
-        const value = current.slice(0.-1)
-        setCurrent(value)
-        console.log('cccccccccccc')
-    }
-    const getPerious = () =>{
-        switch (current){
-            case "+":
-                setPrevious(Number(number1)+ Number(number2));
-                break;
-            case "-":
-                setPrevious(Number(number1)- Number(number2));
-                break;
-            case "*":
-                setPrevious(Number(number1) * Number(number2));
-                break;
-            case "/":
-                setPrevious(Number(number1) / Number(number2));
-                break;
-            default:
-        }
+	const [calculator, setCalculator] = useState('') // Hiển thị phép tính
 
-    }
-  return (
-    <div className={'App'}>
-      <div className={'caculator'}>
-            <div className={'output'}>
-                <div className={'previous'}>
-                    {current ? number1+current:""}
-                </div>
-                <div className={'current'}>
-                    {previous ?  previous :(!current ? number1 : number2)}
-                </div>
-            </div>
+	const onActionClick = useCallback((value) => {
+		if(!isNaN(parseInt(value))){ // Kiểm tra là số
+			setResult(result + value)
+		} else {
+			// eslint-disable-next-line default-case
+			switch (value.toUpperCase()) {
+				case '+':
+				case "-":
+				case "*":
+				case "/":
+					setCalculator(result + value);
+					setResult('')
+				break
+				case '=':
+					let currentNumber = parseInt(result)
+					const calculation = calculator.split('').find(x=>x === '+' || x === '-' || x === '*' || x === '/') // tìm phép tính trong str
+					const previousNumber = parseInt(calculator.split(calculation)[0])
+					if(result === '') currentNumber = previousNumber
+					setCalculator(calculator + previousNumber + '=')
+					// eslint-disable-next-line default-case
+					switch (calculation) {
+						case '+':
+							setResult((previousNumber + currentNumber).toString())
+							break
+						case "-":
+							setResult((previousNumber - currentNumber).toString())
+							break
+						case "*":
+							setResult((previousNumber * currentNumber).toString())
+							break
+						case "/":
+							setResult((previousNumber / currentNumber).toString())
+							break
+					}
+					break
+				case 'DEL':
+					setResult(result.substring(0, result.length - 1))
+					break
+				case 'AC':
+					setResult('')
+					setCalculator('')
+					break
+			}
+		}
+	},[calculator, result]);
 
-                  <button onClick={()=>{Clear()}} className={'span-two'}>AC</button>
-                  <button onClick={()=>{Delete()}}>DEL</button>
-                  <button onClick={()=>{clickSign("/")}}>/</button>
-                  <button onClick={()=>clickNumber(7)}>7</button>
-                  <button onClick={()=>clickNumber(8)}>8</button>
-                  <button onClick={()=>clickNumber(9)}>9</button>
-                  <button onClick={()=>{clickSign("*")}}>*</button>
-                  <button onClick={()=>clickNumber(4)}>4</button>
-                  <button onClick={()=>clickNumber(5)}>5</button>
-                  <button onClick={()=>clickNumber(6)}>6</button>
-                  <button onClick={()=>{clickSign("+")}}>+</button>
-                  <button onClick={()=>clickNumber(1)}>1</button>
-                  <button onClick={()=>clickNumber(2)}>2</button>
-                  <button onClick={()=>clickNumber(3)}>3</button>
-                  <button onClick={()=>{clickSign("-")}}>-</button>
-                  <button onClick={()=>{clickNumber(".")}}>.</button>
-                  <button onClick={()=>{clickNumber(0)}}>0</button>
-                  <button onClick={() => getPerious()} className={'span-two'}>=</button>
-      </div>
-    </div>
-  );
+	return (
+		<div className={'App'}>
+			<div className={'caculator'}>
+				<div className={'output'}>
+					<div className={'previous'}>
+						{calculator}
+					</div>
+					<div className={'current'}>
+						{result}
+					</div>
+				</div>
+				{
+					arrAction.map((el)=>(
+						<ActionCalculator onClick={onActionClick} action={el.toUpperCase()} key={el}/>
+					))
+				}
+			</div>
+		</div>
+	);
 }
 
 export default App;
